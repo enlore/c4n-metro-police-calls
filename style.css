@@ -8,9 +8,9 @@ body {
 nav { position: relative; }
 .glitchButton { position: absolute; top: 20px; right: 20px; z-index: 10000; }
 
-h1 {
-  color: #0000FF;
-}
+.datasetLink { margin-bottom: 8px; }
+
+h1 { color: #0000FF; }
 
 a {
   text-decoration: none;
@@ -23,7 +23,6 @@ a {
     content: '\21AC';
     margin-left: 8px;
 }
-.f__inline { display: inline-block; }
 
 h1, h2, h3 { font-family: 'Zilla Slab', serif; }
 h1 { font-size: 36px; }
@@ -37,12 +36,17 @@ p, a, td { font-size: 16px; }
 .f__italic { font-style: italic; }
 .f__right { text-align: right; }
 .f__fade { color: rgba(0, 0, 0, 0.62); }
+.f__inline { display: inline-block; }
+.f__center { text-align: center; }
 
-p, a, li, span { font-family: 'Open Sans', serif; }
+p, a, li, span, div { font-family: 'Open Sans', serif; }
 
+.u__resp { max-width: 100%; display: block; }
+.u__imgAnchor { border: none; }
+.u__marginAuto { margin-left: auto; margin-right: auto; }
 .wrap { max-width: 1200px; margin: 0 auto; }
 
-.row { overflow: hidden; }
+/* .row { overflow: hidden; } */
 .row:after {
   clear: both;
   content: '';
@@ -72,4 +76,42 @@ p, a, li, span { font-family: 'Open Sans', serif; }
 .callInfo * {
   margin-top: 8px;
   margin-bottom: 0px;
+}
+
+footer {
+  position: relative;
+  padding-top: 48px;
+  opacity: 0.4;
+}
+
+.footerLogo {
+  margin: 16px auto;
+  max-width: 200px;
+
+}
+
+.footerLogo__citeGroup {
+  display: none;
+}
+
+
+@media (min-width: 1200px) {
+  footer {
+    padding-top: 290px;
+  }
+  
+  .footerLogo {
+    position: absolute;
+    right: 0;
+  }
+  
+  .footerLogo__citeGroup {
+    display: block;
+    position: absolute;
+    text-align: left;
+    transform: rotate(-90deg);
+    left: -104px;
+    top: -46px;
+    width: 150px;
+  }
 }
