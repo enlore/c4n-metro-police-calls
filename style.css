@@ -1,0 +1,75 @@
+/* CSS files add styling rules to your content */
+* { box-sizing: border-box; }
+
+body {
+  padding: 2em;
+}
+
+nav { position: relative; }
+.glitchButton { position: absolute; top: 20px; right: 20px; z-index: 10000; }
+
+h1 {
+  color: #0000FF;
+}
+
+a {
+  text-decoration: none;
+  border-bottom: 2px solid #0000FF;
+  color: #0000FF; 
+  display: inline-block;
+}
+
+.f__out:after {
+    content: '\21AC';
+    margin-left: 8px;
+}
+.f__inline { display: inline-block; }
+
+h1, h2, h3 { font-family: 'Zilla Slab', serif; }
+h1 { font-size: 36px; }
+h2 { font-size: 24px; }
+h3 { font-size: 18px; }
+p, a, td { font-size: 16px; }
+
+.f__h { font-family: 'Zilla Slab', serif; }
+.f__p { font-family: 'Open Sans', serif; }
+.f__sm { font-size: 12px; }
+.f__italic { font-style: italic; }
+.f__right { text-align: right; }
+.f__fade { color: rgba(0, 0, 0, 0.62); }
+
+p, a, li, span { font-family: 'Open Sans', serif; }
+
+.wrap { max-width: 1200px; margin: 0 auto; }
+
+.row { overflow: hidden; }
+.row:after {
+  clear: both;
+  content: '';
+}
+
+@media (min-width: 1200px) {
+  .col {
+    float: left;
+  }
+  
+  .col--50 {
+    width: 50%;
+  }
+
+  .col--70 { width: 70%; }
+  .col--30 { width: 30%; }
+}
+
+.slider__input {
+  height: 36px; max-width: 100%; width: 600px; margin: 0px auto; display: block;
+}
+
+.slider {
+  padding: 0 16px;
+}
+
+.callInfo * {
+  margin-top: 8px;
+  margin-bottom: 0px;
+}
