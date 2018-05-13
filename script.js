@@ -58,140 +58,142 @@
       geocoder.on('result', (ev) => {
         map.getSource('geocoder-result').setData(ev.result.geometry)
       })
-    const socrataToken = 'ZBIG3Lx4BagIQAnFaSxdXbo2s'
-    const query = `
-      SELECT 
-        description,
-        tencode,
-        tencode_suffixf_description,
-        unit_dispatched,
-        event_number,
-        call_received, 
-        date_trunc_ymd(call_received) as $call_date,
-        shift, 
-        disposition_description, 
-        mapped_location, 
-        street_name,
-        block,
-        zone
-      ORDER BY call_received DESC
-      LIMIT 20000`
     
-    fetch(`https://data.nashville.gov/resource/28i3-48zr.json?$$app_token=${socrataToken}&$query=${query}`)
-      // wild and free i just believe
-      .then(resp => resp.json())
-      .then(body => {
-        const descriptionToColor = body.reduce((acc, call) => {
-          if (! ~acc.indexOf(call.description)) {
-            // results in "DESCRIPTION_TEXT", "HEX_COLOR" pairs used later as
-            // arguments to a mapbox layer expression
-            acc.push(call.description)
-            acc.push(popColor())
-          }
+      const socrataToken = 'ZBIG3Lx4BagIQAnFaSxdXbo2s'
+      
+      const query = `
+        SELECT 
+          description,
+          tencode,
+          tencode_suffixf_description,
+          unit_dispatched,
+          event_number,
+          call_received, 
+          date_trunc_ymd(call_received) as $call_date,
+          shift, 
+          disposition_description, 
+          mapped_location, 
+          street_name,
+          block,
+          zone
+        ORDER BY call_received DESC
+        LIMIT 20000`
 
-          return acc
-        }, [])
+      fetch(`https://data.nashville.gov/resource/28i3-48zr.json?$$app_token=${socrataToken}&$query=${query}`)
+        // wild and free i just believe
+        .then(resp => resp.json())
+        .then(body => {
+          const descriptionToColor = body.reduce((acc, call) => {
+            if (! ~acc.indexOf(call.description)) {
+              // results in "DESCRIPTION_TEXT", "HEX_COLOR" pairs used later as
+              // arguments to a mapbox layer expression
+              acc.push(call.description)
+              acc.push(popColor())
+            }
 
-        const callFeatures = genFeatures(body)
-        rowCount.innerText = callFeatures.length
-        
-        const days = Object.keys(callFeatures.reduce((acc, f) => {
-            acc[f.properties.$call_date] = 0
             return acc
-          }, {}))
-        
-        if (dayScrubber) {
-          dayScrubber.setAttribute('max', days.length - 1)
-          dayScrubber.setAttribute('value', dayScrubber.max)
-          
-          dateSelection.innerText = days[0].split('T')[0]
-          
-          dayScrubber.removeAttribute('disabled')
-   
-          dayScrubber.addEventListener('input', ev => {
-            let len = days.length - 1
-            
-            const val = parseInt(ev.target.value, 10)
-            
-            setDayFilter(map, days[len - val])
-            
-            dateSelection.innerText = days[len - val].split('T')[0]
-            
-            callPopup.remove()
-            
-            console.info('filter set to ', val, days[len - val])
-          })
-        
-          console.info('dayScrubber - total days:', dayScrubber.max, 'days in result set:', days)
-        }
-      
-        console.info('data - calls for service:', callFeatures.length)
-        console.info(`${descriptionToColor.length / 2} different description labels`)
-        console.table(descriptionToColor.filter(l => l !== 'cyan'))
-      
-        map.addSource('police-calls', {
-          type: "geojson",
-          data: {
-            type: "FeatureCollection",
-            features: callFeatures
+          }, [])
+
+          const callFeatures = genFeatures(body)
+          rowCount.innerText = callFeatures.length
+
+          const days = Object.keys(callFeatures.reduce((acc, f) => {
+              acc[f.properties.$call_date] = 0
+              return acc
+            }, {}))
+
+          if (dayScrubber) {
+            dayScrubber.setAttribute('max', days.length - 1)
+            dayScrubber.setAttribute('value', dayScrubber.max)
+
+            dateSelection.innerText = days[0].split('T')[0]
+
+            dayScrubber.removeAttribute('disabled')
+
+            dayScrubber.addEventListener('input', ev => {
+              let len = days.length - 1
+
+              const val = parseInt(ev.target.value, 10)
+
+              setDayFilter(map, days[len - val])
+
+              dateSelection.innerText = days[len - val].split('T')[0]
+
+              callPopup.remove()
+
+              console.info('filter set to ', val, days[len - val])
+            })
+
+            console.info('dayScrubber - total days:', dayScrubber.max, 'days in result set:', days)
           }
-        })
 
-        map.addLayer({
-          id: 'call-points',
-          type: 'circle',
-          paint: {
-            'circle-radius': 9,
-            'circle-color': [
-              'match',
-              ['to-string', [ 'get', 'description' ]],
-              ...descriptionToColor, // everything is cyan
-              'lightblue'
-            ]
-          },
-          source: "police-calls"
-        }, 'geocoder-pin')
+          console.info('data - calls for service:', callFeatures.length)
+          console.info(`${descriptionToColor.length / 2} different description labels`)
+          console.table(descriptionToColor.filter(l => l !== 'cyan'))
 
-        map.addLayer({
-          id: 'call-labels',
-          type: 'symbol',
-          source: 'police-calls',
-          layout: {
-            'text-field': ['to-string', [ 'get', 'description' ]],
-            'text-anchor': 'left',
-            'text-justify': 'left',
-            'text-offset': [1, 0]
-          },
-          paint: {
-            'text-color': 'black'
-          }
-        }, 'geocoder-pin')
-      
-        setDayFilter(map, days[0])  
-
-        map.on('click', 'call-points', (ev) => {
-          const call = ev.features[0]
-
-          map.once('moveend', () => {
-            showPopup(callPopup, call)
+          map.addSource('police-calls', {
+            type: "geojson",
+            data: {
+              type: "FeatureCollection",
+              features: callFeatures
+            }
           })
 
-          map.flyTo({
-            center: call.geometry.coordinates,
-            zoom: 17
+          map.addLayer({
+            id: 'call-points',
+            type: 'circle',
+            paint: {
+              'circle-radius': 9,
+              'circle-color': [
+                'match',
+                ['to-string', [ 'get', 'description' ]],
+                ...descriptionToColor, // everything is cyan
+                'lightblue'
+              ]
+            },
+            source: "police-calls"
+          }, 'geocoder-pin')
+
+          map.addLayer({
+            id: 'call-labels',
+            type: 'symbol',
+            source: 'police-calls',
+            layout: {
+              'text-field': ['to-string', [ 'get', 'description' ]],
+              'text-anchor': 'left',
+              'text-justify': 'left',
+              'text-offset': [1, 0]
+            },
+            paint: {
+              'text-color': 'black'
+            }
+          }, 'geocoder-pin')
+
+          setDayFilter(map, days[0])  
+
+          map.on('click', 'call-points', (ev) => {
+            const call = ev.features[0]
+
+            map.once('moveend', () => {
+              showPopup(callPopup, call)
+            })
+
+            map.flyTo({
+              center: call.geometry.coordinates,
+              zoom: 17
+            });
+          })
+
+          map.on('mouseenter', 'call-points', () => {
+            map.getCanvas().style.cursor = 'pointer'
+          })
+
+
+          map.on('mouseleave', 'call-points', function () {
+            map.getCanvas().style.cursor = '';
           });
-        })
-
-        map.on('mouseenter', 'call-points', () => {
-          map.getCanvas().style.cursor = 'pointer'
-        })
-
-
-        map.on('mouseleave', 'call-points', function () {
-          map.getCanvas().style.cursor = '';
-        });
-    })
-    .catch(err => console.error('error on map load', err))
+      })
+      .catch(err => console.error('error on map load', err))
   })
   
   function setDayFilter (map, date) { 
